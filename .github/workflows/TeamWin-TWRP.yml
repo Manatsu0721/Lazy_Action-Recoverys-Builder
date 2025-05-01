@@ -162,19 +162,15 @@ jobs:
     - name: Install PyPy 2.7 as Python2 replacement
       if: env.CHECK_LEGACY_BRANCH == 'true'
       run: |
-        # 下载并解压 PyPy
         wget https://downloads.python.org/pypy/pypy2.7-v7.3.19-linux64.tar.bz2
         tar -xvjf pypy2.7-v7.3.19-linux64.tar.bz2
         sudo mv pypy2.7-v7.3.19-linux64 /opt/pypy2.7
-        # 创建全局符号链接（覆盖系统默认 python/python2）
+        /opt/pypy2.7/bin/pypy -m ensurepip
+        /opt/pypy2.7/bin/pypy -mpip install -U pip wheel
         sudo ln -sf /opt/pypy2.7/bin/pypy /usr/bin/python
         sudo ln -sf /opt/pypy2.7/bin/pypy /usr/bin/python2
-        # 验证安装
-        echo "PyPy version: $(python --version)"
-        echo "Python2 alias: $(python2 --version)"
-        # 安装并升级 pip
-        curl https://bootstrap.pypa.io/2.7/get-pip.py -o get-pip.py
-        python2 get-pip.py
+        sudo ln -sf /opt/pypy2.7/bin/pip /usr/bin/pip
+        sudo ln -sf /opt/pypy2.7/bin/pip /usr/bin/pip2
 
     
     - name: Building Image 
