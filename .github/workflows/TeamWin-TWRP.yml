@@ -6,7 +6,7 @@ on:
       MANIFEST_BRANCH:
         description: 'TWRP Manifest Branch'
         required: true
-        default: 'twrp-9.0'
+        default: ''
         type: choice
         options:
         - twrp-12.1
@@ -22,7 +22,7 @@ on:
       DEVICE_TREE:
         description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
         required: true
-        default: 'https://github.com/KawaiiSparkle/android_unisoc_twrpdt'
+        default: 'https://github.com/lazycodebuilder/recovery_rmx1851'
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
@@ -49,7 +49,9 @@ on:
 jobs:
   build:
     name: Build TWRP by ${{ github.actor }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/catthehacker/ubuntu:runner-20.04
     if: github.event.repository.owner.id == github.event.sender.id
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -159,20 +161,11 @@ jobs:
         echo "Moving device_tree to $DEVICE_DIRECTORY/$DEVICE_NAME"
         mv device_tree "$DEVICE_DIRECTORY"/"$DEVICE_NAME"
 
-    - name: Install PyPy 2.7 as Python2 replacement
+    - name: Installing python2 for legacy builds
       if: env.CHECK_LEGACY_BRANCH == 'true'
       run: |
-        wget https://downloads.python.org/pypy/pypy2.7-v7.3.19-linux64.tar.bz2
-        tar -xvjf pypy2.7-v7.3.19-linux64.tar.bz2
-        sudo mv pypy2.7-v7.3.19-linux64 /opt/pypy2.7
-        /opt/pypy2.7/bin/pypy -m ensurepip
-        /opt/pypy2.7/bin/pypy -mpip install -U pip wheel
-        sudo ln -sf /opt/pypy2.7/bin/pypy /usr/bin/python
-        sudo ln -sf /opt/pypy2.7/bin/pypy /usr/bin/python2
-        sudo ln -sf /opt/pypy2.7/bin/pip /usr/bin/pip
-        sudo ln -sf /opt/pypy2.7/bin/pip /usr/bin/pip2
+        sudo apt-get install python2 python-is-python2
 
-    
     - name: Building Image 
       run: |
         cd android-recovery
@@ -209,7 +202,7 @@ jobs:
           Device: [Device Tree/Branch](${{ inputs.DEVICE_TREE }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})
           Commit: Most recent [commit](${{ inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building.
 
-    - name: Remote Debugging
-      run: |
-          curl -sL https://gist.githubusercontent.com/qwqlemon2333/1c9a4e04cf7fd3bd5b95a2e56b682d08/raw/5ba0fdf624ecf64f337ffead7b9f7d1cd5614140/debug-github-actions.sh | bash
-          sleep 2h
+    # - name: Remote Debugging
+    #   run: |
+    #       curl -sL https://gist.githubusercontent.com/qwqlemon2333/1c9a4e04cf7fd3bd5b95a2e56b682d08/raw/5ba0fdf624ecf64f337ffead7b9f7d1cd5614140/debug-github-actions.sh | bash
+    #       sleep 2h
