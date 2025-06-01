@@ -26,7 +26,7 @@ on:
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
-        default: ''
+        default: 'ud710-chip1-T10'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: true
@@ -185,8 +185,15 @@ jobs:
     - name: Set Build Date # Output will be use in Release
       run: |
         echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
-      
+
+    - name: Remote Debugging(If Failure)
+      if: ${{ failure() }}
+      run: |
+          curl -sL https://gist.githubusercontent.com/qwqlemon2333/1c9a4e04cf7fd3bd5b95a2e56b682d08/raw/5ba0fdf624ecf64f337ffead7b9f7d1cd5614140/debug-github-actions.sh | bash
+          sleep 5h
+          
     - name: Upload to Release
+      if: ${{ always() }}
       uses: softprops/action-gh-release@master
       with:
         files: |
@@ -199,8 +206,3 @@ jobs:
           Build: ${{ inputs.MANIFEST_BRANCH }}
           Device: [Device Tree/Branch](${{ inputs.DEVICE_TREE }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})
           Commit: Most recent [commit](${{ inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building.
-
-    # - name: Remote Debugging
-    #   run: |
-    #       curl -sL https://gist.githubusercontent.com/qwqlemon2333/1c9a4e04cf7fd3bd5b95a2e56b682d08/raw/5ba0fdf624ecf64f337ffead7b9f7d1cd5614140/debug-github-actions.sh | bash
-    #       sleep 2h
