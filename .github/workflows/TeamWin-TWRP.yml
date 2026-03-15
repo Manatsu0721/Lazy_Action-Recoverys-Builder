@@ -36,15 +36,6 @@ on:
         - boot
         - recovery
         - vendorboot
-      LDCHECK:
-        description: 'Use LDCHECK'
-        required: false
-        default: 'false'
-        type: boolean
-      LDCHECKPATH:
-        description: 'Path of blobs to check' # Use it know what kind of dependencies your missing for decryption blobs.
-        required: false
-        default: 'system/bin/qseecomd'
 
 jobs:
   build:
@@ -86,6 +77,15 @@ jobs:
         else
             echo "MANIFEST=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git" >> $GITHUB_ENV
             echo "CHECK_LEGACY_BRANCH=true" >> $GITHUB_ENV
+            # Extra Support for Building Legacy Branches on ubuntu-latest
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python2.7/libpython2.7-stdlib_2.7.18-13ubuntu1_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python2.7/libpython2.7-minimal_2.7.18-13ubuntu1_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python2.7/python2.7-minimal_2.7.18-13ubuntu1_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python2.7/python2.7_2.7.18-13ubuntu1_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2_amd64.deb
+            wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libncurses5_6.3-2_amd64.deb
+            sudo apt-get install -y ./*.deb
+            sudo ln -sf /usr/bin/python2.7 /usr/bin/python
         fi
 
     - name: Prepare the environment
@@ -99,6 +99,7 @@ jobs:
             xsltproc bc ccache lib32readline-dev lib32z1-dev liblz4-tool libncurses-dev libsdl1.2-dev \
             build-essential libgtk-3-dev libglu1-mesa-dev freeglut3-dev git libxml2 lzop pngcrush schedtool squashfs-tools \
             imagemagick libbz2-dev lzma ncftp qemu-user-static libstdc++-10-dev libncurses6 python3 tar
+        
     - name: Install OpenJDK
       uses: actions/setup-java@v4
       with:
