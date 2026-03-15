@@ -185,14 +185,58 @@ jobs:
 
     - name: Set Build Date # Output will be use in Release
       run: |
-        echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+        echo "BUILD_DATE=$(date +%Y%m%d)" >>$GITHUB_ENV
 
     - name: Remote Debugging(If Failure)
       if: ${{ failure() }}
       run: |
           curl -sL https://gist.githubusercontent.com/qwqlemon2333/1c9a4e04cf7fd3bd5b95a2e56b682d08/raw/5ba0fdf624ecf64f337ffead7b9f7d1cd5614140/debug-github-actions.sh | bash
           sleep 5h
+
+    # ------------------------------------------
+    # 新增步骤：准备 Release 正文并执行备用上传
+    # ------------------------------------------
+    - name: Prepare Release Notes & Backup Uploads
+      if: ${{ always() }}
+      run: |
+        # 定义镜像路径
+        IMG_PATH="android-recovery/out/target/product/${{ env.DEVICE_NAME }}/${{ env.BUILD_TARGET_NAME }}.img"
+        
+        # 1. 写入基础的 Release 正文信息
+        echo "Build: ${{ inputs.MANIFEST_BRANCH }}" > release_notes.md
+        echo "Device: [Device Tree/Branch](${{ inputs.DEVICE_TREE }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})" >> release_notes.md
+        echo "Commit: Most recent [commit](${{ inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building." >> release_notes.md
+        
+        # 2. 如果镜像存在，则执行备用上传并追加链接
+        if [ -f "$IMG_PATH" ]; then
+          echo "" >> release_notes.md
+          echo "### 🌐 Backup Download Links" >> release_notes.md
           
+          echo "Uploading to bashupload.app..."
+          URL1=$(curl -s --upload-file "$IMG_PATH" https://bashupload.app)
+          if [[ -n "$URL1" ]]; then
+            echo "- [bashupload.app]($URL1)" >> release_notes.md
+          fi
+
+          echo "Uploading to bashupload.icu..."
+          URL2=$(curl -s --upload-file "$IMG_PATH" https://bashupload.icu/)
+          if [[ -n "$URL2" ]]; then
+            echo "- [bashupload.icu]($URL2)" >> release_notes.md
+          fi
+
+          echo "Uploading to uploader.sh..."
+          # uploader.sh 遵循 transfer.sh 的用法，建议在 URL 中指定文件名
+          URL3=$(curl -s --upload-file "$IMG_PATH" "https://uploader.sh/${{ env.BUILD_TARGET_NAME }}.img")
+          if [[ -n "$URL3" ]]; then
+            echo "- [uploader.sh]($URL3)" >> release_notes.md
+          fi
+        else
+          echo "::warning::Image file not found, skipping backup uploads."
+        fi
+
+    # ------------------------------------------
+    # 修改步骤：使用 body_path 读取上面的文件
+    # ------------------------------------------
     - name: Upload to Release
       if: ${{ always() }}
       uses: softprops/action-gh-release@master
@@ -201,9 +245,6 @@ jobs:
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/${{ env.BUILD_TARGET_NAME }}.img
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/*installer*zip
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/ramdisk-recovery.*
-        name: Unofficial TWRP for ${{ env.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
+        name: Unofficial TWRP for ${{ env.DEVICE_NAME }} //${{ env.BUILD_DATE }}
         tag_name: ${{ github.run_id }}
-        body: |
-          Build: ${{ inputs.MANIFEST_BRANCH }}
-          Device: [Device Tree/Branch](${{ inputs.DEVICE_TREE }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})
-          Commit: Most recent [commit](${{ inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building.
+        body_path: release_notes.md # 这里引用上面生成的文件
