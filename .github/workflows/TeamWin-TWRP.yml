@@ -218,11 +218,11 @@ jobs:
             echo "- [bashupload.app]($URL1)" >> release_notes.md
           fi
 
-          echo "Uploading to bashupload.icu..."
-          URL2=$(curl -s --upload-file "$IMG_PATH" https://bashupload.icu/)
-          if [[ -n "$URL2" ]]; then
-            echo "- [bashupload.icu]($URL2)" >> release_notes.md
-          fi
+          # echo "Uploading to bashupload.icu..."
+          # URL2=$(curl -s --upload-file "$IMG_PATH" https://bashupload.icu/)
+          # if [[ -n "$URL2" ]]; then
+          #   echo "- [bashupload.icu]($URL2)" >> release_notes.md
+          # fi
 
           echo "Uploading to uploader.sh..."
           # uploader.sh 遵循 transfer.sh 的用法，建议在 URL 中指定文件名
