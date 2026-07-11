@@ -207,17 +207,17 @@ jobs:
           echo "" >> release_notes.md
           echo "### 🌐 Backup Download Links" >> release_notes.md
           echo "Uploading to bashupload.app..."
-          URL1=$(curl -s --upload-file "$IMG_PATH" https://bashupload.app)
+          URL1=$(curl -sk --upload-file "$IMG_PATH" https://bashupload.app)
           if [[ -n "$URL1" ]]; then
             echo "- [bashupload.app]($URL1)" >> release_notes.md
           fi
           echo "Uploading to bashupload.icu..."
-          URL2=$(curl -s --upload-file "$IMG_PATH" https://bashupload.icu/)
+          URL2=$(curl -sk --upload-file "$IMG_PATH" https://bashupload.icu/)
           if [[ -n "$URL2" ]]; then
             echo "- [bashupload.icu]($URL2)" >> release_notes.md
           fi
           echo "Uploading to uploader.sh..."
-          URL3=$(curl -s --upload-file "$IMG_PATH" "https://uploader.sh/${{ env.BUILD_TARGET_NAME }}.img")
+          URL3=$(curl -sk --upload-file "$IMG_PATH" "https://uploader.sh/${{ env.BUILD_TARGET_NAME }}.img")
           if [[ -n "$URL3" ]]; then
             echo "- [uploader.sh]($URL3)" >> release_notes.md
           fi
