@@ -211,11 +211,12 @@ jobs:
           if [[ -n "$URL1" ]]; then
             echo "- [bashupload.app]($URL1)" >> release_notes.md
           fi
-          echo "Uploading to bashupload.icu..."
-          URL2=$(curl -sk --upload-file "$IMG_PATH" https://bashupload.icu/)
-          if [[ -n "$URL2" ]]; then
-            echo "- [bashupload.icu]($URL2)" >> release_notes.md
-          fi
+        # 注释掉此处避免反复失败。
+        # echo "Uploading to bashupload.icu..."
+        # URL2=$(curl -sk --upload-file "$IMG_PATH" https://bashupload.icu/)
+        # if [[ -n "$URL2" ]]; then
+        #   echo "- [bashupload.icu]($URL2)" >> release_notes.md
+        # fi
           echo "Uploading to uploader.sh..."
           URL3=$(curl -sk --upload-file "$IMG_PATH" "https://uploader.sh/${{ env.BUILD_TARGET_NAME }}.img")
           if [[ -n "$URL3" ]]; then
